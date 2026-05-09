@@ -31,8 +31,11 @@ jobs:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
+      - name: Check JavaScript syntax
+        run: npm run check
+
       - name: Build static Pages artifact
-        run: node scripts/build-pages.js
+        run: npm run build:pages
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

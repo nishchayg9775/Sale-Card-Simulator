@@ -30,7 +30,7 @@ const BULK_PRESET_LOGO_OPTIONS = [
   { id: 'dark', label: 'Dark Logo ZIP', fileName: 'Dark.zip', description: 'Use the bundled dark-theme logo pack' }
 ];
 const BULK_PRESET_SHEET_OPTIONS = [
-  { id: 'april14', label: 'sale data 14 April.xlsx', fileName: 'sale data 14 April.xlsx', description: 'Use the bundled sales sheet' }
+  { id: 'april22', label: 'sale data 22 April.xlsx', fileName: 'sale data 22 April.xlsx', description: 'Use the bundled sales sheet' }
 ];
 let bulkSelectedPresetLogo = BULK_PRESET_LOGO_OPTIONS[0].id;
 let bulkSelectedPresetSheet = BULK_PRESET_SHEET_OPTIONS[0].id;

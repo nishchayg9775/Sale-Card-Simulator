@@ -10,7 +10,7 @@ const publicFiles = [
   ['Layer 1.png', 'Layer 1.png'],
   ['Light.zip', 'Light.zip'],
   ['Dark.zip', 'Dark.zip'],
-  ['sale data 14 April.xlsx', 'sale data 14 April.xlsx']
+  ['sale data 22 April.xlsx', 'sale data 22 April.xlsx']
 ];
 
 function copyFile(src, dest) {

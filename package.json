@@ -5,7 +5,9 @@
   "description": "Univest Card Studio with shared server-backed library storage",
   "scripts": {
     "start": "node server.js",
-    "build:pages": "node scripts/build-pages.js"
+    "build:pages": "node scripts/build-pages.js",
+    "check": "node --check app.js && node --check server.js && node --check scripts/build-pages.js",
+    "verify": "npm run check && npm run build:pages"
   },
   "dependencies": {
     "@google/genai": "^1.48.0"

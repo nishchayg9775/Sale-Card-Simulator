@@ -80,7 +80,7 @@ const PUBLIC_ROOT_FILES = new Set([
   'Layer 1.png',
   'Light.zip',
   'Dark.zip',
-  'sale data 14 April.xlsx'
+  'sale data 22 April.xlsx'
 ]);
 
 const BLOCKED_ROOT_NAMES = new Set([

@@ -54,9 +54,18 @@ This creates a `dist/` folder with only public files:
 - `index.html`
 - `app.js`
 - `styles.css`
-- logo and preset ZIP/XLSX assets
+- logo ZIP assets
+- `sale data 22 April.xlsx`
 
 Sensitive/runtime files such as `.env`, `server-data/`, `node_modules/`, and backend logs are not included.
+
+### Verify Locally
+
+```bash
+npm run verify
+```
+
+This checks JavaScript syntax and rebuilds the static GitHub Pages output.
 
 ### Deploy
 
