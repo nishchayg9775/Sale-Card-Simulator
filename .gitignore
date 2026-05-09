@@ -1,0 +1,13 @@
+.env
+.env.local
+server.out.log
+server.err.log
+node_modules/
+.qa-tools/node_modules/
+.qa-tools/downloads/
+.qa-tools/*.png
+server-data/
+dist/
+docs/pdf-page-check/
+docs/rendered/
+*.tmp

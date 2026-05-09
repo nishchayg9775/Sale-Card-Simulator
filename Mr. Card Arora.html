@@ -1,0 +1,2106 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Univest Card Studio</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,900&family=DM+Serif+Display:ital@1&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="logo">
+        <img class="logo-badge" src="Layer%201.png" alt="Layer 1" />
+        <div class="logo-copy">
+          <div class="logo-title">Card Studio</div>
+          <div class="logo-sub">Design sale cards and homepage banners</div>
+        </div>
+      </div>
+      <div class="nav">
+        <button
+          class="nav-btn active"
+          id="nav-editor"
+          onclick="switchTab('editor')"
+        >
+          Editor
+        </button>
+        <button class="nav-btn" id="nav-banner" onclick="switchTab('banner')">
+          Banner
+        </button>
+        <button class="nav-btn" id="nav-bulk" onclick="switchTab('bulk')">
+          Bulk Generator
+        </button>
+      </div>
+      <div class="top-meta">
+        <div id="chip" onclick="openRename()">
+          <b id="cur-name">Untitled Card</b>
+          <div class="udot" id="udot"></div>
+          <span class="chip-edit-label">Edit</span>
+        </div>
+        <div class="autosave-chip" id="autosave-chip" role="status" aria-live="polite">Draft idle</div>
+      </div>
+      <div class="tsep"></div>
+      <div class="top-actions">
+        <button class="tbtn tb-g" onclick="openNewCard()">+ New</button>
+        <button class="tbtn tb-g" onclick="openSave()">Save</button>
+        <button
+          class="tbtn tb-g"
+          id="undo-btn"
+          onclick="doUndo()"
+          title="Undo (Ctrl+Z / Ctrl+Alt+Z)"
+        >
+          Undo
+        </button>
+        <button
+          class="tbtn tb-g"
+          id="redo-btn"
+          onclick="doRedo()"
+          title="Redo (Ctrl+Shift+Z / Ctrl+Y)"
+        >
+          Redo
+        </button>
+        <button
+          class="tbtn tb-y"
+          id="fix-all-btn"
+          onclick="runAutoDebug()"
+          title="Auto-fix common issues: logo, BG, positions, storage"
+          hidden
+        >
+          Fix All
+        </button>
+        <div class="export-wrap">
+        <button
+          class="tbtn tb-gr export-main"
+          onclick="exportWithFormat()"
+          id="export-main-btn"
+        >
+          Download PNG
+        </button>
+        <button
+          class="tbtn tb-gr export-toggle"
+          onclick="toggleExportMenu(event)"
+          title="Export format options"
+        >
+          v
+        </button>
+        <span
+          id="size-hint"
+          class="size-hint"
+        ></span>
+        <div
+          id="export-menu"
+          style="
+            display: none;
+            position: absolute;
+            top: 38px;
+            right: 0;
+            background: var(--p2);
+            border: 1px solid var(--b2);
+            border-radius: 8px;
+            padding: 5px;
+            z-index: 200;
+            min-width: 160px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+          "
+        >
+          <div
+            style="
+              font-size: 9px;
+              color: var(--muted);
+              padding: 4px 8px 6px;
+              letter-spacing: 1px;
+              text-transform: uppercase;
+            "
+          >
+            Format
+          </div>
+            <div class="ctx-i" onclick="setExportFmt('png')">PNG (lossless)</div>
+            <div class="ctx-i" onclick="setExportFmt('jpeg')">
+              JPEG (compressed)
+            </div>
+          <div
+            style="height: 1px; background: var(--border); margin: 4px 0"
+          ></div>
+          <div
+            class="exp-q-row"
+            style="
+              display: none;
+              font-size: 9px;
+              color: var(--muted);
+              padding: 4px 8px 6px;
+              letter-spacing: 1px;
+              text-transform: uppercase;
+            "
+          >
+            JPEG Quality
+          </div>
+          <div
+            class="exp-q-row"
+            style="
+              display: none;
+              padding: 2px 8px 8px;
+              align-items: center;
+              gap: 8px;
+            "
+          >
+            <input
+              type="range"
+              id="jpeg-q-slider"
+              min="1"
+              max="95"
+              value="60"
+              style="flex: 1; accent-color: var(--accent)"
+              oninput="$('jpeg-q-val').textContent = this.value"
+            />
+            <span
+              id="jpeg-q-val"
+              style="
+                font-size: 11px;
+                color: var(--accent);
+                font-weight: 700;
+                width: 28px;
+              "
+              >60</span
+            >
+          </div>
+          <div
+            class="exp-q-row"
+            style="
+              display: none;
+              padding: 0 8px 6px;
+              font-size: 10px;
+              color: var(--muted);
+            "
+          >
+            Lower = smaller file
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-shell-bar" id="mobile-shell-bar" aria-label="Editor quick navigation">
+      <button
+        class="mobile-shell-btn"
+        id="mobile-controls-btn"
+        type="button"
+        onclick="toggleResponsivePanel('controls')"
+      >
+        Controls
+      </button>
+      <button
+        class="mobile-shell-btn is-primary"
+        id="mobile-canvas-btn"
+        type="button"
+        onclick="focusResponsiveCanvas()"
+      >
+        Canvas
+      </button>
+      <button
+        class="mobile-shell-btn"
+        id="mobile-library-btn"
+        type="button"
+        onclick="toggleResponsivePanel('library')"
+      >
+        Library
+      </button>
+    </div>
+    <div
+      class="mobile-panel-backdrop"
+      id="mobile-panel-backdrop"
+      onclick="closeResponsivePanels()"
+      aria-hidden="true"
+    ></div>
+
+    <div id="tab-editor">
+      <div class="lpanel">
+        <div class="mobile-panel-head">
+          <div class="mobile-panel-title">Editor Controls</div>
+          <button
+            type="button"
+            class="mobile-panel-close"
+            onclick="closeResponsivePanels()"
+            aria-label="Close controls panel"
+          >
+            Close
+          </button>
+        </div>
+        <div class="panel-intro">
+          <div class="panel-intro-title">Design Controls</div>
+          <div class="panel-intro-copy">
+            Tune layout, pricing, logos, and colors for the active card before
+            saving or exporting.
+          </div>
+        </div>
+        <div class="sec">Background PNG</div>
+
+        <label class="upbox" id="bg-box">
+          <input
+            type="file"
+            id="bg-inp"
+            accept="image/*"
+            onchange="handleBG(event)"
+          />
+          <div class="up-ico" id="bg-ico">PNG</div>
+          <div class="up-txt" id="bg-txt">
+            Upload card background<br /><span
+              style="font-size: 9px; opacity: 0.5"
+              >Artboard = exact PNG size</span
+            >
+          </div>
+        </label>
+
+        <div class="sec">Logos - Upload SVGs</div>
+        <label class="upbox" id="logo-upload-box" style="margin-bottom: 6px">
+          <input
+            type="file"
+            id="logo-multi-inp"
+            accept=".svg,image/*"
+            multiple
+            onchange="handleLogoUpload(event)"
+          />
+          <div class="up-ico" id="logo-multi-ico">LOGO</div>
+          <div class="up-txt" id="logo-multi-txt">
+            Upload SVG / PNG logos<br /><span
+              style="font-size: 9px; opacity: 0.5"
+              >Select multiple files at once</span
+            >
+          </div>
+        </label>
+
+        <div
+          id="logo-grid"
+          style="
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            margin-bottom: 8px;
+          "
+        ></div>
+        <div class="sr">
+          <label>Logo size</label
+          ><input
+            type="range"
+            id="sz-logo"
+            min="10"
+            max="200"
+            value="34"
+            oninput="
+              syncNum('sz-logo');
+              debouncedPushUndo();
+              render();
+            "
+          /><input
+            type="number"
+            id="sz-logo-num"
+            value="34"
+            min="10"
+            max="200"
+            style="
+              width: 42px;
+              background: #090c15;
+              border: 1px solid var(--b2);
+              border-radius: 4px;
+              color: var(--text);
+              font-family: &quot;Inter&quot;;
+              font-size: 11px;
+              padding: 2px 4px;
+              text-align: center;
+              outline: none;
+            "
+            oninput="
+              syncSlider('sz-logo');
+              debouncedPushUndo();
+              render();
+            "
+          />
+        </div>
+        <div
+          id="active-logo-name"
+          style="
+            font-size: 10px;
+            color: var(--muted);
+            margin-bottom: 6px;
+            display: none;
+          "
+        >
+          Active: <b id="aln-text"></b>
+        </div>
+
+        <div class="sec">Asset Manager</div>
+        <div class="asset-card">
+          <div class="asset-card-copy">
+            Reuse uploaded backgrounds and logos across cards and systems.
+          </div>
+          <div class="asset-head">Backgrounds</div>
+          <div class="asset-grid asset-grid-bg" id="asset-bg-grid"></div>
+          <div class="asset-head" style="margin-top: 10px">Logos</div>
+          <div class="asset-grid" id="asset-logo-grid"></div>
+        </div>
+
+        <div class="sec">Subtitle - DM Serif Italic</div>
+        <div class="f">
+          <label class="fl">Text</label
+          ><input
+            type="text"
+            id="f-subtitle"
+            value="Stock + F&O Ideas"
+            oninput="
+              dirty();
+              debouncedPushUndo();
+              render();
+            "
+          />
+        </div>
+        <div class="sr">
+          <label>Font size</label
+          ><input
+            type="range"
+            id="sz-subtitle"
+            min="8"
+            max="200"
+            value="35"
+            oninput="
+              syncNum('sz-subtitle');
+              debouncedPushUndo();
+              render();
+            "
+          /><input
+            type="number"
+            id="sz-subtitle-num"
+            value="35"
+            min="8"
+            max="200"
+            style="
+              width: 42px;
+              background: #090c15;
+              border: 1px solid var(--b2);
+              border-radius: 4px;
+              color: var(--text);
+              font-family: &quot;Inter&quot;;
+              font-size: 11px;
+              padding: 2px 4px;
+              text-align: center;
+              outline: none;
+            "
+            oninput="
+              syncSlider('sz-subtitle');
+              debouncedPushUndo();
+              render();
+            "
+          />
+        </div>
+
+        <div class="sec">Offer Block</div>
+        <div class="g3">
+          <div class="f">
+            <label class="fl">Big #</label
+            ><input
+              type="text"
+              id="f-bignum"
+              value="9"
+              oninput="
+                dirty();
+                debouncedPushUndo();
+                render();
+              "
+            />
+          </div>
+          <div class="f">
+            <label class="fl">Label</label
+            ><input
+              type="text"
+              id="f-months"
+              value="MONTHS"
+              oninput="
+                dirty();
+                debouncedPushUndo();
+                render();
+              "
+            />
+          </div>
+          <div class="f">
+            <label class="fl">Tag</label
+            ><input
+              type="text"
+              id="f-free"
+              value="FREE"
+              oninput="
+                dirty();
+                debouncedPushUndo();
+                render();
+              "
+            />
+          </div>
+        </div>
+        <div class="sr">
+          <label>Big # size</label
+          ><input
+            type="range"
+            id="sz-bignum"
+            min="30"
+            max="400"
+            value="103"
+            oninput="
+              syncNum('sz-bignum');
+              debouncedPushUndo();
+              render();
+            "
+          /><input
+            type="number"
+            id="sz-bignum-num"
+            value="86"
+            min="30"
+            max="400"
+            style="
+              width: 42px;
+              background: #090c15;
+              border: 1px solid var(--b2);
+              border-radius: 4px;
+              color: var(--text);
+              font-family: &quot;Inter&quot;;
+              font-size: 11px;
+              padding: 2px 4px;
+              text-align: center;
+              outline: none;
+            "
+            oninput="
+              syncSlider('sz-bignum');
+              debouncedPushUndo();
+              render();
+            "
+          />
+        </div>
+        <div class="sr">
+          <label>MONTHS size</label
+          ><input
+            type="range"
+            id="sz-months"
+            min="8"
+            max="200"
+            value="28"
+            oninput="
+              syncNum('sz-months');
+              debouncedPushUndo();
+              render();
+            "
+          /><input
+            type="number"
+            id="sz-months-num"
+            value="28"
+            min="8"
+            max="200"
+            style="
+              width: 42px;
+              background: #090c15;
+              border: 1px solid var(--b2);
+              border-radius: 4px;
+              color: var(--text);
+              font-family: &quot;Inter&quot;;
+              font-size: 11px;
+              padding: 2px 4px;
+              text-align: center;
+              outline: none;
+            "
+            oninput="
+              syncSlider('sz-months');
+              debouncedPushUndo();
+              render();
+            "
+          />
+        </div>
+        <div class="sr">
+          <label>FREE size</label
+          ><input
+            type="range"
+            id="sz-free"
+            min="8"
+            max="200"
+            value="56"
+            oninput="
+              syncNum('sz-free');
+              debouncedPushUndo();
+              render();
+            "
+          /><input
+            type="number"
+            id="sz-free-num"
+            value="47"
+            min="8"
+            max="200"
+            style="
+              width: 42px;
+              background: #090c15;
+              border: 1px solid var(--b2);
+              border-radius: 4px;
+              color: var(--text);
+              font-family: &quot;Inter&quot;;
+              font-size: 11px;
+              padding: 2px 4px;
+              text-align: center;
+              outline: none;
+            "
+            oninput="
+              syncSlider('sz-free');
+              debouncedPushUndo();
+              render();
+            "
+          />
+        </div>
+        <div class="f">
+          <label class="fl">Description</label
+          ><input
+            type="text"
+            id="f-sublabel"
+            value="on 6 Months Plan"
+            oninput="
+              dirty();
+              debouncedPushUndo();
+              render();
+            "
+          />
+        </div>
+        <div class="sr">
+          <label>Desc size</label
+          ><input
+            type="range"
+            id="sz-sublabel"
+            min="8"
+            max="150"
+            value="22"
+            oninput="
+              syncNum('sz-sublabel');
+              debouncedPushUndo();
+              render();
+            "
+          /><input
+            type="number"
+            id="sz-sublabel-num"
+            value="22"
+            min="8"
+            max="150"
+            style="
+              width: 42px;
+              background: #090c15;
+              border: 1px solid var(--b2);
+              border-radius: 4px;
+              color: var(--text);
+              font-family: &quot;Inter&quot;;
+              font-size: 11px;
+              padding: 2px 4px;
+              text-align: center;
+              outline: none;
+            "
+            oninput="
+              syncSlider('sz-sublabel');
+              debouncedPushUndo();
+              render();
+            "
+          />
+        </div>
+        <div class="sr">
+          <label>Desc gap</label
+          ><input
+            type="range"
+            id="gap-sublabel"
+            min="0"
+            max="60"
+            value="10"
+            oninput="
+              syncNum('gap-sublabel');
+              debouncedPushUndo();
+              render();
+            "
+          /><input
+            type="number"
+            id="gap-sublabel-num"
+            value="10"
+            min="0"
+            max="60"
+            style="
+              width: 42px;
+              background: #090c15;
+              border: 1px solid var(--b2);
+              border-radius: 4px;
+              color: var(--text);
+              font-family: &quot;Inter&quot;;
+              font-size: 11px;
+              padding: 2px 4px;
+              text-align: center;
+              outline: none;
+            "
+            oninput="
+              syncSlider('gap-sublabel');
+              debouncedPushUndo();
+              render();
+            "
+          />
+        </div>
+
+        <div class="sec">Pricing</div>
+        <div class="g2">
+          <div class="f">
+            <label class="fl">Original (₹)</label
+            ><input
+              type="text"
+              id="f-orig"
+              value="18,599"
+              oninput="
+                dirty();
+                debouncedPushUndo();
+                render();
+              "
+            />
+          </div>
+          <div class="f">
+            <label class="fl">Final (₹)</label
+            ><input
+              type="text"
+              id="f-final"
+              value="5,999"
+              oninput="
+                dirty();
+                debouncedPushUndo();
+                render();
+              "
+            />
+          </div>
+        </div>
+        <div class="sr">
+          <label>Orig size</label
+          ><input
+            type="range"
+            id="sz-orig"
+            min="8"
+            max="200"
+            value="30"
+            oninput="
+              syncNum('sz-orig');
+              debouncedPushUndo();
+              render();
+            "
+          /><input
+            type="number"
+            id="sz-orig-num"
+            value="28"
+            min="8"
+            max="200"
+            style="
+              width: 42px;
+              background: #090c15;
+              border: 1px solid var(--b2);
+              border-radius: 4px;
+              color: var(--text);
+              font-family: &quot;Inter&quot;;
+              font-size: 11px;
+              padding: 2px 4px;
+              text-align: center;
+              outline: none;
+            "
+            oninput="
+              syncSlider('sz-orig');
+              debouncedPushUndo();
+              render();
+            "
+          />
+        </div>
+        <div class="sr">
+          <label>Final size</label
+          ><input
+            type="range"
+            id="sz-final"
+            min="8"
+            max="200"
+            value="52"
+            oninput="
+              syncNum('sz-final');
+              debouncedPushUndo();
+              render();
+            "
+          /><input
+            type="number"
+            id="sz-final-num"
+            value="50"
+            min="8"
+            max="200"
+            style="
+              width: 42px;
+              background: #090c15;
+              border: 1px solid var(--b2);
+              border-radius: 4px;
+              color: var(--text);
+              font-family: &quot;Inter&quot;;
+              font-size: 11px;
+              padding: 2px 4px;
+              text-align: center;
+              outline: none;
+            "
+            oninput="
+              syncSlider('sz-final');
+              debouncedPushUndo();
+              render();
+            "
+          />
+        </div>
+
+        <div class="sec">Text Colors</div>
+        <div class="cr">
+          <div class="cw">
+            <input
+              type="color"
+              id="c-subtitle"
+              value="#8fa3b8"
+              oninput="
+                dirty();
+                debouncedPushUndo();
+                render();
+              "
+            /><span>Subtitle</span>
+          </div>
+          <div class="cw">
+            <input
+              type="color"
+              id="c-bignum"
+              value="#1BA8E8"
+              oninput="
+                dirty();
+                debouncedPushUndo();
+                render();
+              "
+            /><span>Big #</span>
+          </div>
+          <div class="cw">
+            <input
+              type="color"
+              id="c-months"
+              value="#1a1a2e"
+              oninput="
+                dirty();
+                debouncedPushUndo();
+                render();
+              "
+            /><span>Label</span>
+          </div>
+          <div class="cw">
+            <input
+              type="color"
+              id="c-free"
+              value="#1BA8E8"
+              oninput="
+                dirty();
+                debouncedPushUndo();
+                render();
+              "
+            /><span>FREE</span>
+          </div>
+          <div class="cw">
+            <input
+              type="color"
+              id="c-sublabel"
+              value="#6a7a9a"
+              oninput="
+                dirty();
+                debouncedPushUndo();
+                render();
+              "
+            /><span>Desc</span>
+          </div>
+          <div class="cw">
+            <input
+              type="color"
+              id="c-orig"
+              value="#aab0c0"
+              oninput="
+                dirty();
+                debouncedPushUndo();
+                render();
+              "
+            /><span>Orig</span>
+          </div>
+          <div class="cw">
+            <input
+              type="color"
+              id="c-orig-strike"
+              value="#aab0c0"
+              oninput="
+                dirty();
+                debouncedPushUndo();
+                render();
+              "
+            /><span>Strike</span>
+          </div>
+          <div class="cw">
+            <input
+              type="color"
+              id="c-final"
+              value="#1a1a2e"
+              oninput="
+                dirty();
+                debouncedPushUndo();
+                render();
+              "
+            /><span>Final</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview">
+        <div id="draft-banner" class="draft-banner">
+          <span id="draft-banner-text"></span>
+          <button class="draft-btn" type="button" onclick="restoreDraft()">
+            Restore Draft
+          </button>
+          <button class="draft-btn draft-btn-muted" type="button" onclick="discardDraft(true)">
+            Discard
+          </button>
+        </div>
+        <div id="folder-sync-banner" class="folder-sync-banner">
+          <span id="folder-sync-banner-text"></span>
+          <button id="folder-sync-apply" class="folder-sync-apply" type="button" onclick="applyCurrentCardToFolder()">
+            Apply to All Cards
+          </button>
+        </div>
+        <div class="stage-shell">
+          <div class="stage-ruler stage-ruler-x" id="stage-ruler-x"></div>
+          <div class="stage-ruler stage-ruler-y" id="stage-ruler-y"></div>
+          <div class="stage-guide stage-guide-v" id="guide-v"></div>
+          <div class="stage-guide stage-guide-h" id="guide-h"></div>
+          <div id="card-stage">
+            <div id="card-ph">
+              <div class="card-ph-orb"></div>
+              <div class="card-ph-chip">PNG</div>
+              <div class="card-ph-title">Upload background PNG</div>
+              <div class="card-ph-sub">The editor will snap to the exact artboard size automatically.</div>
+              <button type="button" class="card-ph-cta" onclick="$('bg-inp').click()">
+                Choose Background
+              </button>
+            </div>
+            <img id="card-bg-img" src="" alt="" />
+            <div class="drag-hint" id="dhint">Drag text to reposition</div>
+
+            <div
+              class="tx-el"
+              id="tx-badge"
+              data-key="badge"
+              style="
+                top: 12%;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                align-items: center;
+                gap: 4px;
+              "
+            >
+              <img id="tx-logo" src="" alt="" />
+              <span id="tx-badge-emoji" style="font-size: 0.9em; line-height: 1"
+                >LOGO</span
+              >
+            </div>
+
+            <div
+              class="tx-el"
+              id="tx-subtitle"
+              data-key="subtitle"
+              style="
+                top: 24%;
+                left: 50%;
+                transform: translateX(-50%);
+                font-family: &quot;DM Serif Display&quot;, serif;
+                font-style: italic;
+                font-weight: 400;
+                color: #8fa3b8;
+                letter-spacing: -0.3px;
+                white-space: nowrap;
+              "
+            ></div>
+
+            <div
+              class="tx-el"
+              id="tx-offer"
+              data-key="offer"
+              style="
+                top: 47%;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0px;
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 4px;
+                  line-height: 1;
+                "
+              >
+                <span
+                  id="tx-bignum"
+                  style="
+                    font-family: &quot;Inter&quot;, sans-serif;
+                    font-weight: 900;
+                    font-style: normal;
+                    color: #1ba8e8;
+                    line-height: 0.9;
+                    letter-spacing: -3px;
+                    display: flex;
+                    align-items: center;
+                  "
+                ></span>
+                <div
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    gap: 0px;
+                  "
+                >
+                  <div
+                    id="tx-months"
+                    style="
+                      font-family: &quot;Inter&quot;, sans-serif;
+                      font-weight: 800;
+                      color: #1a1a2e;
+                      letter-spacing: 2.5px;
+                      line-height: 1;
+                    "
+                  ></div>
+                  <div
+                    id="tx-free"
+                    style="
+                      font-family: &quot;Inter&quot;, sans-serif;
+                      font-weight: 900;
+                      color: #1ba8e8;
+                      letter-spacing: 1px;
+                      line-height: 1;
+                    "
+                  ></div>
+                </div>
+              </div>
+
+              <div
+                id="tx-sublabel"
+                style="
+                  font-family: &quot;Inter&quot;, sans-serif;
+                  font-weight: 400;
+                  color: #6a7a9a;
+                  text-align: center;
+                  margin-top: 10px;
+                "
+              ></div>
+            </div>
+
+            <div
+              class="tx-el"
+              id="tx-pricing"
+              data-key="pricing"
+              style="
+                top: 68%;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                align-items: baseline;
+                gap: 18px;
+                white-space: nowrap;
+              "
+            >
+              <span
+              id="tx-orig"
+              style="
+                font-family: &quot;Inter&quot;, sans-serif;
+                font-weight: 500;
+                color: #aab0c0;
+                letter-spacing: -0.3px;
+                position: relative;
+                display: inline-block;
+              "
+            ></span>
+              <span
+                id="tx-final"
+                style="
+                  font-family: &quot;Inter&quot;, sans-serif;
+                  font-weight: 800;
+                  color: #1a1a2e;
+                  letter-spacing: -1px;
+                "
+              ></span>
+            </div>
+
+            <div id="transform-box" class="transform-box" aria-hidden="true">
+              <div class="transform-box-label" id="transform-box-label">Transform</div>
+              <span class="transform-handle h-nw" data-handle="nw"></span>
+              <span class="transform-handle h-n" data-handle="n"></span>
+              <span class="transform-handle h-ne" data-handle="ne"></span>
+              <span class="transform-handle h-e" data-handle="e"></span>
+              <span class="transform-handle h-se" data-handle="se"></span>
+              <span class="transform-handle h-s" data-handle="s"></span>
+              <span class="transform-handle h-sw" data-handle="sw"></span>
+              <span class="transform-handle h-w" data-handle="w"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pos-bar">
+          <span class="pos-hint">Click &amp; drag to reposition</span>
+          <span class="pos-state" id="pos-sel" style="display: none"
+            >| <b id="pos-nm">-</b> X:<b id="pos-x">-</b>% Y:<b id="pos-y">-</b
+            >%</span
+          >
+          <button
+            onclick="autoSpace()"
+            title="Distribute elements with equal gaps vertically"
+          >
+            Auto-space
+          </button>
+          <button onclick="resetPos()">Reset</button>
+        </div>
+      </div>
+
+      <div class="library" id="lib-panel">
+        <div class="mobile-panel-head mobile-panel-head-right">
+          <div class="mobile-panel-title">Workspace</div>
+          <button
+            type="button"
+            class="mobile-panel-close"
+            onclick="closeResponsivePanels()"
+            aria-label="Close library panel"
+          >
+            Close
+          </button>
+        </div>
+        <div class="rpanel-tabs">
+          <div
+            class="rpanel-tab active"
+            id="rtab-layers"
+            onclick="switchRTab('layers')"
+          >
+            Layers
+          </div>
+          <div
+            class="rpanel-tab"
+            id="rtab-library"
+            onclick="switchRTab('library')"
+          >
+            Library
+          </div>
+        </div>
+
+        <div class="rpanel-pane active" id="rpane-layers">
+          <div class="layer-list" id="layer-list"></div>
+
+          <div class="layer-edit" id="layer-edit">
+            <div class="le-title">
+              <div class="le-title-copy">
+                <span class="le-title-kicker">Inspector</span>
+                <span id="le-name">Element</span>
+              </div>
+              <span class="le-title-hint">Arrow keys to nudge</span>
+            </div>
+            <div class="le-row" id="le-text-row">
+              <span class="le-lbl">Text</span>
+              <input
+                class="le-inp"
+                id="le-text"
+                oninput="leApply()"
+                placeholder="Text content"
+              />
+            </div>
+            <div class="le-row" id="le-color-row">
+              <span class="le-lbl">Color</span>
+              <input
+                type="color"
+                class="le-color"
+                id="le-color"
+                oninput="leApply()"
+              />
+              <span
+                style="font-size: 10px; color: var(--muted); flex: 1"
+                id="le-color-hex"
+                >#000000</span
+              >
+            </div>
+            <div class="le-row" id="le-size-row">
+              <span class="le-lbl">Size</span>
+              <input
+                type="range"
+                id="le-size-slider"
+                min="8"
+                max="400"
+                value="35"
+                oninput="leSizeSync(this.value)"
+                style="flex: 1; accent-color: var(--accent)"
+              />
+              <input
+                type="number"
+                class="le-num"
+                id="le-size-num"
+                value="35"
+                min="8"
+                max="400"
+                oninput="leSizeSync(this.value)"
+              />
+            </div>
+            <div class="le-row">
+              <span class="le-lbl">Pos Y</span>
+              <input
+                type="range"
+                id="le-y-slider"
+                min="0"
+                max="95"
+                step="0.5"
+                value="33"
+                oninput="lePosSync('y', this.value)"
+                style="flex: 1; accent-color: var(--accent)"
+              />
+              <input
+                type="number"
+                class="le-num"
+                id="le-y-num"
+                value="33"
+                min="0"
+                max="95"
+                step="0.5"
+                oninput="lePosSync('y', this.value)"
+              />
+            </div>
+            <div class="le-row">
+              <span class="le-lbl">Pos X</span>
+              <input
+                type="range"
+                id="le-x-slider"
+                min="0"
+                max="100"
+                step="0.5"
+                value="50"
+                oninput="lePosSync('x', this.value)"
+                style="flex: 1; accent-color: var(--accent)"
+              />
+              <input
+                type="number"
+                class="le-num"
+                id="le-x-num"
+                value="50"
+                min="0"
+                max="100"
+                step="0.5"
+                oninput="lePosSync('x', this.value)"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="rpanel-pane" id="rpane-library">
+          <div class="lib-hdr">
+            <div class="lib-hdr-top">
+              <div class="lib-copy">
+                <div class="lib-title">Library</div>
+              </div>
+              <div class="lib-acts">
+                <button class="lbtn lb-g" onclick="openFolderModal()">
+                  + Folder
+                </button>
+                <button class="lbtn lb-a" onclick="dlAll()">Download All</button>
+              </div>
+            </div>
+            <div class="lib-subtitle">
+              Folders, previews, and exports
+            </div>
+            <input
+              type="text"
+              id="lib-search"
+              class="lib-search"
+              placeholder="Search folders, cards, or tags"
+              oninput="setLibrarySearch(this.value)"
+            />
+            <div id="lib-tag-filters" class="lib-tag-filters"></div>
+          </div>
+
+          <div
+            class="sel-bar"
+            id="sel-bar"
+            title="Click blank space to clear selection"
+          >
+            <div class="sel-meta">
+              <span class="sel-count-wrap"><b id="sel-count">0</b> selected</span>
+            </div>
+            <div class="sel-actions">
+              <button class="sel-btn" onclick="selApplyBG()">Apply BG</button>
+              <button class="sel-btn" onclick="selDownload()">Download</button>
+              <button class="sel-btn danger" onclick="selDeselect()">Clear</button>
+            </div>
+          </div>
+          <div class="lib-list" id="lib-list">
+            <div
+              style="
+                text-align: center;
+                color: var(--muted);
+                font-size: 11px;
+                padding: 28px 0;
+              "
+            >
+              No folders yet.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-banner">
+      <div class="banner-shell">
+        <div class="banner-panel">
+          <div class="panel-intro">
+            <div class="panel-intro-title">Homepage Banner Studio</div>
+            <div class="panel-intro-copy">
+              Gemini API generates the art layer. The app keeps the
+              composition, text, clipping, and export pixel-perfect.
+            </div>
+          </div>
+
+          <div class="sec">Template</div>
+          <select id="banner-template" class="banner-select" onchange="onBannerTemplateChange()">
+            <option value="nifty-expiry">Nifty Expiry Sale</option>
+            <option value="bull-bear">Bull / Bear Market</option>
+            <option value="blue-market">Blue Market Spotlight</option>
+          </select>
+
+          <div class="sec">Outer Background</div>
+          <div class="banner-bg-mode">
+            <label class="banner-mode-pill">
+              <span>Solid</span>
+              <select id="banner-outer-mode" onchange="onBannerDraftChange()">
+                <option value="solid">Solid</option>
+                <option value="gradient">Gradient</option>
+              </select>
+            </label>
+          </div>
+          <div class="banner-bg-grid">
+            <div class="banner-bg-field">
+              <div class="banner-bg-label">Base Color</div>
+              <input
+                type="color"
+                id="banner-outer-color"
+                value="#ffffff"
+                oninput="onBannerDraftChange()"
+              />
+            </div>
+            <div class="banner-bg-field">
+              <div class="banner-bg-label">Gradient Start</div>
+              <input
+                type="color"
+                id="banner-outer-grad-start"
+                value="#f6fbff"
+                oninput="onBannerDraftChange()"
+              />
+            </div>
+            <div class="banner-bg-field">
+              <div class="banner-bg-label">Gradient End</div>
+              <input
+                type="color"
+                id="banner-outer-grad-end"
+                value="#eaf4ff"
+                oninput="onBannerDraftChange()"
+              />
+            </div>
+          </div>
+
+          <div class="sec">Prompt</div>
+          <div class="f">
+            <label class="fl">Gemini prompt</label>
+            <textarea
+              id="banner-prompt"
+              rows="4"
+              placeholder="Describe the banner art you want Gemini to generate"
+              oninput="onBannerDraftChange()"
+            ></textarea>
+          </div>
+
+          <div class="sec">Text Overlay</div>
+          <div class="f">
+            <label class="fl">Top line</label>
+            <input
+              type="text"
+              id="banner-kicker"
+              value="NIFTY EXPIRY"
+              oninput="onBannerDraftChange()"
+            />
+          </div>
+          <div class="f">
+            <label class="fl">Headline</label>
+            <input
+              type="text"
+              id="banner-headline"
+              value="SALE"
+              oninput="onBannerDraftChange()"
+            />
+          </div>
+          <div class="f">
+            <label class="fl">Support line</label>
+            <input
+              type="text"
+              id="banner-support"
+              value="Premium market opportunity"
+              oninput="onBannerDraftChange()"
+            />
+          </div>
+
+          <div class="sec">Tuning</div>
+          <div class="banner-sliders">
+            <div class="sr">
+              <label>Art zoom</label>
+              <input
+                type="range"
+                id="banner-art-scale"
+                min="80"
+                max="140"
+                value="100"
+                oninput="syncBannerSlider('banner-art-scale'); onBannerDraftChange()"
+              />
+              <input
+                type="number"
+                id="banner-art-scale-num"
+                min="80"
+                max="140"
+                value="100"
+                oninput="syncBannerNumber('banner-art-scale'); onBannerDraftChange()"
+              />
+            </div>
+            <div class="sr">
+              <label>Art Y</label>
+              <input
+                type="range"
+                id="banner-art-y"
+                min="-40"
+                max="40"
+                value="0"
+                oninput="syncBannerSlider('banner-art-y'); onBannerDraftChange()"
+              />
+              <input
+                type="number"
+                id="banner-art-y-num"
+                min="-40"
+                max="40"
+                value="0"
+                oninput="syncBannerNumber('banner-art-y'); onBannerDraftChange()"
+              />
+            </div>
+            <div class="sr">
+              <label>Title size</label>
+              <input
+                type="range"
+                id="banner-title-size"
+                min="54"
+                max="112"
+                value="86"
+                oninput="syncBannerSlider('banner-title-size'); onBannerDraftChange()"
+              />
+              <input
+                type="number"
+                id="banner-title-size-num"
+                min="54"
+                max="112"
+                value="86"
+                oninput="syncBannerNumber('banner-title-size'); onBannerDraftChange()"
+              />
+            </div>
+            <div class="sr">
+              <label>Accent</label>
+              <input
+                type="color"
+                id="banner-accent"
+                value="#2f83ff"
+                oninput="onBannerDraftChange()"
+              />
+              <span class="banner-accent-tip">Used for the subtitle glow and band accents</span>
+            </div>
+          </div>
+
+          <div class="banner-actions">
+            <button class="tbtn tb-y" onclick="generateBannerArt()">Generate Visual</button>
+            <button class="tbtn tb-gr" onclick="exportBannerPng()">Export PNG</button>
+          </div>
+          <div class="banner-note" id="banner-note">
+            Set GEMINI_API_KEY in the server .env to generate visuals. The artwork is clipped inside the 1312 × 219 safe area.
+          </div>
+        </div>
+
+        <div class="banner-stage-wrap">
+          <div class="banner-stage-head">
+            <div>
+              <div class="banner-stage-title">1440 × 280 Banner</div>
+              <div class="banner-stage-sub">
+                Safe area: 1312 × 219, with 40px rounded top corners only and 13px bottom margin
+              </div>
+            </div>
+            <div class="banner-stage-chip" id="banner-status">Local preview</div>
+          </div>
+          <div class="banner-stage-shell">
+            <canvas id="banner-canvas" width="1440" height="280"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-bulk">
+      <div class="bulk-inner">
+        <div class="bulk-hero">
+          <div class="bulk-hero-kicker">Production Workflow</div>
+          <div class="bulk-hero-title">Bulk Card Generator</div>
+          <div class="bulk-hero-copy">
+            Upload one background, match logos, import your sheet, then build a
+            complete library folder in one streamlined pass.
+          </div>
+        </div>
+
+        <div class="bcard">
+          <div class="bcard-title">
+            <div class="step">1</div>
+            Download Excel Template
+          </div>
+          <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px">
+            Fill this CSV with card data: subtitle, pricing, logo filename etc.
+          </p>
+          <button
+            class="tbtn tb-y"
+            style="height: 38px; font-size: 13px"
+            onclick="dlTemplate()"
+          >
+            Download Template (CSV)
+          </button>
+        </div>
+
+        <div class="bcard">
+          <div class="bcard-title">
+            <div class="step">2</div>
+            Upload Card Background PNG
+          </div>
+          <label class="big-upbox" id="bulk-bg-box">
+            <input
+              type="file"
+              id="bulk-bg-inp"
+              accept="image/*"
+              onchange="handleBulkBG(event)"
+            />
+            <div class="big-ico">PNG</div>
+            <div class="big-txt" id="bulk-bg-txt">
+              Click to upload background PNG<br /><span
+                style="font-size: 10px; opacity: 0.6"
+                >All cards use this background</span
+              >
+            </div>
+          </label>
+        </div>
+
+        <div class="bcard">
+          <div class="bcard-title">
+            <div class="step">3</div>
+            Upload Logos ZIP
+          </div>
+          <label class="big-upbox" id="bulk-zip-box">
+            <input
+              type="file"
+              id="bulk-zip-inp"
+              accept=".zip"
+              onchange="handleLogosZip(event)"
+            />
+            <div class="big-ico">ZIP</div>
+            <div class="big-txt" id="bulk-zip-txt">
+              Click to upload logos ZIP<br /><span
+                style="font-size: 10px; opacity: 0.6"
+                >PNG &amp; SVG both supported - filenames must match
+                logo_filename in CSV</span
+              >
+            </div>
+          </label>
+          <div
+            id="zip-found"
+            style="
+              display: none;
+              margin-top: 8px;
+              font-size: 11px;
+              color: var(--green);
+            "
+          ></div>
+          <div class="bulk-source-alt">
+            <div class="bulk-source-divider"><span>Or use existing logos</span></div>
+            <div class="bulk-preset-grid">
+              <button
+                type="button"
+                class="bulk-preset-card"
+                data-bulk-logo-option="light"
+                aria-pressed="false"
+                onclick="selectBulkPresetLogo('light')"
+              >
+                <strong>Light Logo ZIP</strong>
+                <span>Light.zip</span>
+                <em>Use the bundled light-theme logo pack</em>
+              </button>
+              <button
+                type="button"
+                class="bulk-preset-card"
+                data-bulk-logo-option="dark"
+                aria-pressed="false"
+                onclick="selectBulkPresetLogo('dark')"
+              >
+                <strong>Dark Logo ZIP</strong>
+                <span>Dark.zip</span>
+                <em>Use the bundled dark-theme logo pack</em>
+              </button>
+            </div>
+            <div class="bulk-source-note existing" id="bulk-logo-source-note">
+              Using existing file: Light.zip. Upload a new ZIP anytime to override it.
+            </div>
+          </div>
+        </div>
+
+        <div class="bcard">
+          <div class="bcard-title">
+            <div class="step">4</div>
+            Upload Filled CSV / Excel
+          </div>
+          <label class="big-upbox" id="bulk-xl-box">
+            <input
+              type="file"
+              id="bulk-xl-inp"
+              accept=".xlsx,.csv"
+              onchange="handleExcel(event)"
+            />
+            <div class="big-ico">CSV</div>
+            <div class="big-txt" id="bulk-xl-txt">
+              Click to upload filled CSV or XLSX<br /><span
+                style="font-size: 10px; opacity: 0.6"
+                >Use the template from Step 1</span
+              >
+            </div>
+          </label>
+          <div class="bulk-source-alt">
+            <div class="bulk-source-divider"><span>Or use existing data file</span></div>
+            <select
+              class="fsel bulk-existing-select"
+              id="bulk-sheet-select"
+              onchange="selectBulkPresetSheet(this.value)"
+            >
+              <option value="april14">sale data 14 April.xlsx</option>
+            </select>
+            <div class="bulk-source-note existing" id="bulk-sheet-source-note">
+              Using existing data file: sale data 14 April.xlsx. Upload a new file anytime to override it.
+            </div>
+          </div>
+          <div id="xl-preview" style="display: none; margin-top: 12px"></div>
+          <div id="xl-validation" style="display: none; margin-top: 12px"></div>
+        </div>
+
+        <div class="bcard">
+          <div class="bcard-title">
+            <div class="step">5</div>
+            Offer Text Colors (applies to all cards)
+          </div>
+          <p style="font-size: 12px; color: var(--muted); margin-bottom: 14px">
+            Set colors for MONTHS / FREE / PLAN labels - same across all
+            generated cards.
+          </p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+            <div>
+              <div
+                style="
+                  font-size: 10px;
+                  color: #3a4464;
+                  font-weight: 600;
+                  margin-bottom: 6px;
+                  letter-spacing: 0.5px;
+                "
+              >
+                BIG NUMBER COLOR
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px">
+                <input
+                  type="color"
+                  id="bulk-c-bignum"
+                  value="#1BA8E8"
+                  style="
+                    width: 36px;
+                    height: 36px;
+                    border: 1.5px solid var(--b2);
+                    border-radius: 6px;
+                    cursor: pointer;
+                    padding: 2px;
+                    background: #090c15;
+                  "
+                />
+                <span style="font-size: 11px; color: var(--muted)"
+                  >e.g. 9 / 12 / 6</span
+                >
+              </div>
+            </div>
+            <div>
+              <div
+                style="
+                  font-size: 10px;
+                  color: #3a4464;
+                  font-weight: 600;
+                  margin-bottom: 6px;
+                  letter-spacing: 0.5px;
+                "
+              >
+                MONTHS / PLAN LABEL
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px">
+                <input
+                  type="color"
+                  id="bulk-c-months"
+                  value="#1a1a2e"
+                  style="
+                    width: 36px;
+                    height: 36px;
+                    border: 1.5px solid var(--b2);
+                    border-radius: 6px;
+                    cursor: pointer;
+                    padding: 2px;
+                    background: #090c15;
+                  "
+                />
+                <span style="font-size: 11px; color: var(--muted)"
+                  >MONTHS / PLAN</span
+                >
+              </div>
+            </div>
+            <div>
+              <div
+                style="
+                  font-size: 10px;
+                  color: #3a4464;
+                  font-weight: 600;
+                  margin-bottom: 6px;
+                  letter-spacing: 0.5px;
+                "
+              >
+                FREE TAG COLOR
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px">
+                <input
+                  type="color"
+                  id="bulk-c-free"
+                  value="#1BA8E8"
+                  style="
+                    width: 36px;
+                    height: 36px;
+                    border: 1.5px solid var(--b2);
+                    border-radius: 6px;
+                    cursor: pointer;
+                    padding: 2px;
+                    background: #090c15;
+                  "
+                />
+                <span style="font-size: 11px; color: var(--muted)"
+                  >FREE / empty</span
+                >
+              </div>
+            </div>
+            <div>
+              <div
+                style="
+                  font-size: 10px;
+                  color: #3a4464;
+                  font-weight: 600;
+                  margin-bottom: 6px;
+                  letter-spacing: 0.5px;
+                "
+              >
+                SUBTITLE COLOR
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px">
+                <input
+                  type="color"
+                  id="bulk-c-subtitle"
+                  value="#8fa3b8"
+                  style="
+                    width: 36px;
+                    height: 36px;
+                    border: 1.5px solid var(--b2);
+                    border-radius: 6px;
+                    cursor: pointer;
+                    padding: 2px;
+                    background: #090c15;
+                  "
+                />
+                <span style="font-size: 11px; color: var(--muted)"
+                  >e.g. Stock + F&amp;O</span
+                >
+              </div>
+            </div>
+            <div>
+              <div
+                style="
+                  font-size: 10px;
+                  color: #3a4464;
+                  font-weight: 600;
+                  margin-bottom: 6px;
+                  letter-spacing: 0.5px;
+                "
+              >
+                ORIGINAL PRICE
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px">
+                <input
+                  type="color"
+                  id="bulk-c-orig"
+                  value="#aab0c0"
+                  style="
+                    width: 36px;
+                    height: 36px;
+                    border: 1.5px solid var(--b2);
+                    border-radius: 6px;
+                    cursor: pointer;
+                    padding: 2px;
+                    background: #090c15;
+                  "
+                />
+                <span style="font-size: 11px; color: var(--muted)"
+                  >₹18,599 (strikethrough)</span
+                >
+              </div>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  margin-top: 8px;
+                "
+              >
+                <input
+                  type="color"
+                  id="bulk-c-orig-strike"
+                  value="#aab0c0"
+                  style="
+                    width: 36px;
+                    height: 36px;
+                    border: 1.5px solid var(--b2);
+                    border-radius: 6px;
+                    cursor: pointer;
+                    padding: 2px;
+                    background: #090c15;
+                  "
+                />
+                <span style="font-size: 11px; color: var(--muted)"
+                  >Strike line color</span
+                >
+              </div>
+            </div>
+            <div>
+              <div
+                style="
+                  font-size: 10px;
+                  color: #3a4464;
+                  font-weight: 600;
+                  margin-bottom: 6px;
+                  letter-spacing: 0.5px;
+                "
+              >
+                FINAL PRICE
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px">
+                <input
+                  type="color"
+                  id="bulk-c-final"
+                  value="#1a1a2e"
+                  style="
+                    width: 36px;
+                    height: 36px;
+                    border: 1.5px solid var(--b2);
+                    border-radius: 6px;
+                    cursor: pointer;
+                    padding: 2px;
+                    background: #090c15;
+                  "
+                />
+                <span style="font-size: 11px; color: var(--muted)"
+                  >₹5,999</span
+                >
+              </div>
+            </div>
+          </div>
+          <div
+            style="
+              margin-top: 12px;
+              padding: 10px;
+              background: #090c15;
+              border: 1px solid var(--b2);
+              border-radius: 7px;
+              font-size: 11px;
+              color: var(--muted);
+            "
+          >
+            Note: These override the editor colors for all bulk-generated cards.
+          </div>
+        </div>
+
+        <div class="bcard">
+          <div class="bcard-title">
+            <div class="step">6</div>
+            Save to Library Folder &amp; Generate
+          </div>
+          <div style="display: flex; gap: 8px; margin-bottom: 10px">
+            <select
+              class="fsel"
+              id="bulk-fsel"
+              style="flex: 1; margin-bottom: 0"
+            >
+              <option value="">-- Select or create folder --</option>
+            </select>
+            <button
+              class="tbtn tb-g"
+              style="height: 41px; white-space: nowrap; flex-shrink: 0"
+              onclick="createBulkFolder()"
+            >
+              + New
+            </button>
+          </div>
+          <div style="display: flex; gap: 8px">
+            <button
+              class="tbtn tb-gr"
+              id="gen-btn"
+              style="
+                flex: 1;
+                height: 42px;
+                font-size: 13px;
+                justify-content: center;
+              "
+              onclick="startGenerateOnly()"
+            >
+              Generate Only
+            </button>
+            <button
+              class="tbtn tb-y"
+              id="gen-dl-btn"
+              style="
+                flex: 1;
+                height: 42px;
+                font-size: 13px;
+                justify-content: center;
+              "
+              onclick="startGenerateAndDownload()"
+            >
+              Generate + Download
+            </button>
+            <button
+              class="tbtn tb-g"
+              id="gen-zip-btn"
+              style="
+                flex: 1;
+                height: 42px;
+                font-size: 13px;
+                justify-content: center;
+              "
+              onclick="downloadBulkZip()"
+            >
+              Download ZIP
+            </button>
+          </div>
+          <div style="margin-top: 10px; font-size: 11px; color: var(--muted)">
+            Generate Only saves cards to the selected library folder. Generate +
+            Download also downloads each generated card. Download ZIP exports the
+            selected folder as one zip file.
+          </div>
+          <div id="gen-prog" style="display: none; margin-top: 14px">
+            <div class="prog-wrap">
+              <div class="prog-bar" id="prog-bar"></div>
+            </div>
+            <div class="prog-txt" id="prog-txt">Preparing...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="ctx">
+      <div class="ctx-i" onclick="ctxLoad()">Open &amp; Edit</div>
+      <div class="ctx-i" onclick="ctxRename()">Rename</div>
+      <div class="ctx-i" onclick="ctxCopy()">Make a Copy</div>
+      <div class="ctx-i" onclick="ctxExport()">Export (current format)</div>
+      <div class="ctx-i danger" onclick="ctxDelete()">Delete</div>
+    </div>
+
+    <div id="fctx">
+      <div class="ctx-i" onclick="fctxRename()">Rename Folder</div>
+      <div class="ctx-i" onclick="fctxCopy()">Make a Copy</div>
+      <div class="ctx-i" onclick="fctxDownloadZip()">Download All Cards</div>
+      <div class="ctx-i danger" onclick="fctxDelete()">Delete Folder</div>
+    </div>
+
+    <div class="mo" id="mo-save">
+      <div class="md">
+        <div class="md-t">Save to Library</div>
+        <div class="md-s">Name this card and pick a folder</div>
+        <input
+          type="text"
+          id="save-name"
+          placeholder="Card name (e.g. PRO Super - Diwali)"
+        />
+        <input
+          type="text"
+          id="save-tags"
+          placeholder="Card tags (comma separated, optional)"
+        />
+        <select id="save-folder">
+          <option value="">-- Select folder --</option>
+        </select>
+        <div style="font-size: 11px; color: var(--muted)">
+          Or create new folder:
+        </div>
+        <input
+          type="text"
+          id="save-new-folder"
+          placeholder="New folder name (optional)"
+        />
+        <div class="md-acts">
+          <button class="mb mb-c" onclick="closeModal('mo-save')">
+            Cancel
+          </button>
+          <button class="mb mb-s" onclick="saveCard()">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mo" id="mo-new">
+      <div class="md">
+        <div class="md-t">+ New Card</div>
+        <div class="md-s" id="new-sub">Start fresh</div>
+        <button
+          class="mb mb-s"
+          style="width: 100%; height: 42px; font-size: 13px"
+          onclick="doNew()"
+        >
+          Start Fresh
+        </button>
+        <button
+          class="mb mb-c"
+          style="width: 100%; height: 42px; font-size: 13px"
+          onclick="closeModal('mo-new')"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <div class="mo" id="mo-folder">
+        <div class="md folder-md">
+          <div class="folder-modal-kicker">Library Folder</div>
+          <div class="md-t" id="folder-modal-title">New Folder</div>
+          <div class="md-s" id="folder-modal-sub">Create a folder to organize cards, previews, and exports.</div>
+          <div class="folder-modal-grid">
+            <label class="folder-field">
+              <span>Folder name</span>
+              <input
+                type="text"
+                id="folder-inp"
+                placeholder="e.g. Diwali Sale 2025"
+              />
+            </label>
+            <label class="folder-field">
+              <span>Tags</span>
+              <input
+                type="text"
+                id="folder-tags-inp"
+                placeholder="Folder tags (comma separated, optional)"
+              />
+            </label>
+          </div>
+          <div class="folder-note" id="folder-modal-note">Tip: folders can be searched, copied, renamed, and exported later.</div>
+          <div class="md-acts">
+            <button class="mb mb-c" onclick="closeFolderModal()">
+              Cancel
+            </button>
+            <button class="mb mb-s" onclick="mkFolder()">Create</button>
+          </div>
+        </div>
+      </div>
+
+    <div class="mo" id="mo-folder-rename">
+      <div class="md folder-md">
+        <div class="folder-modal-kicker">Library Folder</div>
+        <div class="md-t" id="folder-rename-title">Rename Folder</div>
+        <div class="md-s" id="folder-rename-sub">Update the folder title and tags without affecting the cards inside.</div>
+        <div class="folder-modal-grid">
+          <label class="folder-field">
+            <span>Folder name</span>
+            <input
+              type="text"
+              id="folder-rename-inp"
+              placeholder="Folder name"
+            />
+          </label>
+          <label class="folder-field">
+            <span>Tags</span>
+            <input
+              type="text"
+              id="folder-rename-tags-inp"
+              placeholder="Folder tags (comma separated, optional)"
+            />
+          </label>
+        </div>
+        <div class="folder-note" id="folder-rename-note">Tip: rename is safe and does not alter the cards inside the folder.</div>
+        <div class="md-acts">
+          <button class="mb mb-c" onclick="closeFolderRenameModal()">Cancel</button>
+          <button class="mb mb-s" onclick="doFolderRename()">Rename</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mo" id="mo-rename">
+      <div class="md">
+        <div class="md-t">Rename Card</div>
+        <input type="text" id="rename-inp" />
+        <div class="md-acts">
+          <button class="mb mb-c" onclick="closeModal('mo-rename')">
+            Cancel
+          </button>
+          <button class="mb mb-s" onclick="doRename()">Rename</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mo" id="mo-lib-rename">
+      <div class="md">
+        <div class="md-t">Rename Card</div>
+        <input type="text" id="lib-rename-inp" placeholder="New card name" />
+        <input
+          type="text"
+          id="lib-tags-inp"
+          placeholder="Card tags (comma separated)"
+        />
+        <div class="md-acts">
+          <button class="mb mb-c" onclick="closeModal('mo-lib-rename')">
+            Cancel
+          </button>
+          <button class="mb mb-s" onclick="doLibRename()">Rename</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mo" id="mo-confirm">
+      <div class="md confirm-md">
+        <div class="confirm-badge">Danger Action</div>
+        <div class="md-t" id="confirm-title">Delete folder?</div>
+        <div class="confirm-msg" id="confirm-message">
+          This action removes the folder and all cards inside it.
+        </div>
+        <div class="md-acts confirm-acts">
+          <button class="mb mb-c" id="confirm-cancel" onclick="cancelConfirmDialog()">
+            Cancel
+          </button>
+          <button class="mb mb-danger" id="confirm-ok" onclick="acceptConfirmDialog()">
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
