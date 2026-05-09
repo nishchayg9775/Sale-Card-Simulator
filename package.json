@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "build:pages": "node scripts/build-pages.js",
-    "check": "node --check app-config.js && node --check app.js && node --check server.js && node --check scripts/build-pages.js && node --check scripts/run-qa.js",
+    "check": "node --check app-config.js && node --check app-storage.js && node --check app.js && node --check server.js && node --check scripts/build-pages.js && node --check scripts/run-qa.js",
     "verify": "npm run check && npm run build:pages",
     "qa": "node scripts/run-qa.js regression",
     "qa:all": "node scripts/run-qa.js all",

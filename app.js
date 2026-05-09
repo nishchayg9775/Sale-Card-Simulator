@@ -19,6 +19,10 @@ function ensureH2C(cb) {
 
 /* JSZip and XLSX are loaded from CDN script tags in the HTML shell. */
 const APP_CONFIG = window.UCS_CONFIG || {};
+const APP_STORAGE = window.UCS_STORAGE;
+if (!APP_STORAGE) {
+  throw new Error('Missing app-storage.js. Load app-storage.js before app.js.');
+}
 
 // â•â•â• CORE STATE â•â•â•
 let pngW = 0, pngH = 0, dispScale = 1;
@@ -141,7 +145,7 @@ const DEBUG_TOOLS_KEY = 'ucs4_debug_tools';
 function isDebugToolsEnabled() {
   try {
     return new URLSearchParams(window.location.search).has('debug') ||
-      localStorage.getItem(DEBUG_TOOLS_KEY) === '1';
+      APP_STORAGE.getText(DEBUG_TOOLS_KEY, '') === '1';
   } catch (e) {
     return false;
   }
@@ -440,40 +444,26 @@ function buildLocalLibCachePayload(source) {
 }
 
 function readLocalLibCache() {
-  try {
-    const raw = localStorage.getItem(LIB_STORAGE_KEY);
-    return raw ? normalizeLibShape(JSON.parse(raw)) : null;
-  } catch (e) {
-    return null;
-  }
+  const cached = APP_STORAGE.getJson(LIB_STORAGE_KEY, null);
+  return cached ? normalizeLibShape(cached) : null;
 }
 
 function writeLocalLibCache(showWarning) {
   const lite = buildLocalLibCachePayload(LIB);
-  try {
-    localStorage.setItem(LIB_STORAGE_KEY, JSON.stringify(lite));
+  if (APP_STORAGE.setJson(LIB_STORAGE_KEY, lite)) {
     return true;
   }
-  catch (e) {
-    if (showWarning !== false) toast('Browser cache full: local metadata cache not updated', 'var(--yellow)');
-    return false;
-  }
+  if (showWarning !== false) toast('Browser cache full: local metadata cache not updated', 'var(--yellow)');
+  return false;
 }
 
 function saveLastOpenedCard(fid, cid) {
   if (!fid || !cid) return;
-  try {
-    localStorage.setItem(LAST_OPENED_CARD_KEY, JSON.stringify({ fid, cid }));
-  } catch (e) { }
+  APP_STORAGE.setJson(LAST_OPENED_CARD_KEY, { fid, cid });
 }
 
 function readLastOpenedCard() {
-  try {
-    const raw = localStorage.getItem(LAST_OPENED_CARD_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch (e) {
-    return null;
-  }
+  return APP_STORAGE.getJson(LAST_OPENED_CARD_KEY, null);
 }
 
 function setEditorEmptyState(isEmpty) {
@@ -526,21 +516,11 @@ function setBannerStatus(text, tone) {
 }
 
 function saveBannerDraft() {
-  try {
-    localStorage.setItem(BANNER_DRAFT_KEY, JSON.stringify(bannerState));
-    return true;
-  } catch (err) {
-    return false;
-  }
+  return APP_STORAGE.setJson(BANNER_DRAFT_KEY, bannerState);
 }
 
 function readBannerDraft() {
-  try {
-    const raw = localStorage.getItem(BANNER_DRAFT_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch (err) {
-    return null;
-  }
+  return APP_STORAGE.getJson(BANNER_DRAFT_KEY, null);
 }
 
 function syncBannerInput(id, value) {
@@ -1277,7 +1257,7 @@ async function pushServerLib(snapshot, silent, attempt) {
     if (payload && payload.conflict) {
       applyLibMetaFromResponse(res);
       const merged = mergeLibraries(payload && payload.library, snapshot || LIB);
-      localStorage.setItem(LIB_CONFLICT_CACHE_KEY, JSON.stringify(buildLocalLibCachePayload(snapshot || LIB)));
+      APP_STORAGE.setJson(LIB_CONFLICT_CACHE_KEY, buildLocalLibCachePayload(snapshot || LIB));
       LIB = merged;
       writeLocalLibCache(false);
       renderLib();
@@ -1292,7 +1272,7 @@ async function pushServerLib(snapshot, silent, attempt) {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     applyLibMetaFromResponse(res);
     libRemoteUpdateQueued = false;
-    localStorage.removeItem(LIB_CONFLICT_CACHE_KEY);
+    APP_STORAGE.remove(LIB_CONFLICT_CACHE_KEY);
     return true;
   } catch (e) {
     libServerAvailable = false;
@@ -2613,14 +2593,14 @@ async function loadLib() {
     ensureFolderSharedOverrides(f);
     if (migrateLegacyFolderOverrides(f)) migrated = true;
   });
-  const pendingConflict = localStorage.getItem(LIB_CONFLICT_CACHE_KEY);
+  const pendingConflict = APP_STORAGE.getJson(LIB_CONFLICT_CACHE_KEY, null);
   if (pendingConflict && serverLib) {
     try {
-      const merged = mergeLibraries(serverLib, JSON.parse(pendingConflict));
+      const merged = mergeLibraries(serverLib, pendingConflict);
       LIB = merged;
       writeLocalLibCache(false);
       await pushServerLib(merged, true, 0);
-      localStorage.removeItem(LIB_CONFLICT_CACHE_KEY);
+      APP_STORAGE.remove(LIB_CONFLICT_CACHE_KEY);
     } catch (e) { }
   }
   writeLocalLibCache(false);
@@ -4353,12 +4333,7 @@ function getStateHash(state) {
 }
 
 function readDraft() {
-  try {
-    const raw = localStorage.getItem(EDITOR_DRAFT_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch (e) {
-    return null;
-  }
+  return APP_STORAGE.getJson(EDITOR_DRAFT_KEY, null);
 }
 
 function updateDraftBanner(draft) {
@@ -4394,12 +4369,11 @@ function saveDraftNow() {
     curCardId,
     curFolderId
   };
-  try {
-    localStorage.setItem(EDITOR_DRAFT_KEY, JSON.stringify(draft));
+  if (APP_STORAGE.setJson(EDITOR_DRAFT_KEY, draft)) {
     setAutosaveChip('Draft saved', 'live');
-  } catch (e) {
-    setAutosaveChip('Draft cache full', 'warn');
+    return;
   }
+  setAutosaveChip('Draft cache full', 'warn');
 }
 
 function queueDraftAutosave() {
@@ -4447,7 +4421,7 @@ function queueCurrentCardAutoSave() {
 function discardDraft(showToast) {
   clearTimeout(draftSaveTimer);
   draftSaveTimer = null;
-  localStorage.removeItem(EDITOR_DRAFT_KEY);
+  APP_STORAGE.remove(EDITOR_DRAFT_KEY);
   updateDraftBanner(null);
   setAutosaveChip('Draft idle');
   if (showToast) toast('Draft discarded');
@@ -5817,9 +5791,8 @@ async function runAutoDebug() {
 
   // â”€â”€ 5. Fix Library Storage â”€â”€
   try {
-    const stored = localStorage.getItem(LIB_STORAGE_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored);
+    const parsed = APP_STORAGE.getJson(LIB_STORAGE_KEY, null);
+    if (parsed) {
       let libFixed = 0;
       (parsed.folders || []).forEach(f => {
         (f.cards || []).forEach(c => {
