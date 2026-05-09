@@ -123,6 +123,21 @@ body[data-active-tab="editor"] .mobile-shell-bar.on {
   position: relative;
   z-index: 1;
 }
+.static-mode-notice {
+  display: none;
+  margin: 10px 16px 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(56, 189, 248, 0.26);
+  background: rgba(14, 116, 144, 0.12);
+  color: #dff5ff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.static-mode-notice.on {
+  display: block;
+}
 .logo {
   display: flex;
   align-items: center;
@@ -328,6 +343,11 @@ body[data-active-tab="editor"] .mobile-shell-bar.on {
 .autosave-chip.warn {
   color: #ffe6a5;
   border-color: rgba(245, 158, 11, 0.36);
+}
+.autosave-chip.static {
+  color: #cdeafe;
+  border-color: rgba(56, 189, 248, 0.35);
+  background: rgba(14, 116, 144, 0.16);
 }
 #chip b {
   color: var(--text);
@@ -670,6 +690,11 @@ body[data-active-tab="editor"] .mobile-shell-bar.on {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   line-height: 1.45;
+}
+.banner-note.static {
+  color: #dff5ff;
+  background: rgba(14, 116, 144, 0.12);
+  border-color: rgba(56, 189, 248, 0.28);
 }
 .banner-stage-wrap {
   flex: 1;

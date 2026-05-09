@@ -182,6 +182,10 @@
       </div>
     </div>
 
+    <div class="static-mode-notice" id="static-mode-notice" role="status" aria-live="polite">
+      GitHub Pages mode: designs save in this browser only. Shared sync, server backups, and Gemini image generation are unavailable here.
+    </div>
+
     <div class="mobile-shell-bar" id="mobile-shell-bar" aria-label="Editor quick navigation">
       <button
         class="mobile-shell-btn"
@@ -1420,7 +1424,7 @@
           </div>
 
           <div class="banner-actions">
-            <button class="tbtn tb-y" onclick="generateBannerArt()">Generate Visual</button>
+            <button class="tbtn tb-y" id="banner-generate-btn" onclick="generateBannerArt()">Generate Visual</button>
             <button class="tbtn tb-gr" onclick="exportBannerPng()">Export PNG</button>
           </div>
           <div class="banner-note" id="banner-note">

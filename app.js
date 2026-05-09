@@ -222,9 +222,25 @@ function hasServerApi() {
 
 function initStaticDeployModeNotice() {
   if (!STATIC_DEPLOY_MODE) return;
+  const staticText = 'GitHub Pages mode: designs save in this browser only. Shared sync, server backups, and Gemini image generation are unavailable here.';
+  const globalNotice = $('static-mode-notice');
+  if (globalNotice) {
+    globalNotice.textContent = staticText;
+    globalNotice.classList.add('on');
+  }
+  const chip = $('autosave-chip');
+  if (chip) {
+    chip.textContent = 'Browser-only saves';
+    chip.classList.add('static');
+  }
   const note = $('banner-note');
   if (note) {
-    note.textContent = 'Static GitHub Pages mode: Gemini image generation and shared server sync are disabled. Designs are saved in this browser only.';
+    note.textContent = 'GitHub Pages mode uses the local banner preview. Gemini image generation requires the Node server with GEMINI_API_KEY.';
+    note.classList.add('static');
+  }
+  const generateBtn = $('banner-generate-btn');
+  if (generateBtn) {
+    generateBtn.title = 'Gemini generation is unavailable on GitHub Pages static hosting.';
   }
 }
 
@@ -757,6 +773,10 @@ function onBannerTemplateChange() {
   const nextId = $('banner-template') ? $('banner-template').value : bannerState.templateId;
   applyBannerTemplate(nextId);
   const note = $('banner-note');
+  if (STATIC_DEPLOY_MODE) {
+    initStaticDeployModeNotice();
+    return;
+  }
   if (note && nextId === 'nifty-expiry') {
     note.textContent = 'The generated artwork is clipped inside the 1312 × 219 safe area.';
   }
@@ -1059,7 +1079,10 @@ async function generateBannerArt() {
     bannerState.source = 'local';
     bannerState.status = 'Local preview';
     const note = $('banner-note');
-    if (note) note.textContent = 'Static GitHub Pages mode does not include the Gemini backend. Showing local preview instead.';
+    if (note) {
+      note.textContent = 'GitHub Pages mode uses the local banner preview. Gemini image generation requires the Node server with GEMINI_API_KEY.';
+      note.classList.add('static');
+    }
     setBannerStatus('Local preview', 'warn');
     toast('Gemini backend is not available on GitHub Pages static hosting.', 'var(--yellow)');
     scheduleBannerRender();
