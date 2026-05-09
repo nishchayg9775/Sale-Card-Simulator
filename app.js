@@ -180,12 +180,6 @@ function hasServerApi() {
 
 function initStaticDeployModeNotice() {
   if (!STATIC_DEPLOY_MODE) return;
-  const staticText = 'GitHub Pages mode: designs save in this browser only. Shared sync, server backups, and Gemini image generation are unavailable here.';
-  const globalNotice = $('static-mode-notice');
-  if (globalNotice) {
-    globalNotice.textContent = staticText;
-    globalNotice.classList.add('on');
-  }
   const chip = $('autosave-chip');
   if (chip) {
     chip.textContent = 'Browser-only saves';

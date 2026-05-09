@@ -123,21 +123,6 @@ body[data-active-tab="editor"] .mobile-shell-bar.on {
   position: relative;
   z-index: 1;
 }
-.static-mode-notice {
-  display: none;
-  margin: 10px 16px 0;
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(56, 189, 248, 0.26);
-  background: rgba(14, 116, 144, 0.12);
-  color: #dff5ff;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.45;
-}
-.static-mode-notice.on {
-  display: block;
-}
 .logo {
   display: flex;
   align-items: center;
