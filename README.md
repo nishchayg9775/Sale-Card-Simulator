@@ -67,6 +67,24 @@ npm run verify
 
 This checks JavaScript syntax and rebuilds the static GitHub Pages output.
 
+### Browser QA
+
+```bash
+npm run qa
+```
+
+This starts the local Node server, runs the main Playwright regression script, and stops the server afterward.
+
+Other targeted QA commands:
+
+```bash
+npm run qa:feature
+npm run qa:folder
+npm run qa:offer
+npm run qa:transform
+npm run qa:all
+```
+
 ### Deploy
 
 Before running the workflow, enable Pages for GitHub Actions:
