@@ -75,6 +75,7 @@ const MIME = {
 
 const PUBLIC_ROOT_FILES = new Set([
   'Mr. Card Arora.html',
+  'app-config.js',
   'app.js',
   'styles.css',
   'Layer 1.png',

@@ -6,6 +6,7 @@ const dist = path.join(root, 'dist');
 
 const publicFiles = [
   ['styles.css', 'styles.css'],
+  ['app-config.js', 'app-config.js'],
   ['app.js', 'app.js'],
   ['Layer 1.png', 'Layer 1.png'],
   ['Light.zip', 'Light.zip'],
@@ -23,8 +24,8 @@ function buildIndex() {
   return source
     .replace('<title>Univest Card Studio</title>', '<title>Univest Card Studio</title>\n    <base href="./" />')
     .replace(
-      '<script src="app.js"></script>',
-      '<script>window.UCS_STATIC_MODE = true;</script>\n    <script src="app.js"></script>'
+      '<script src="app-config.js"></script>\n    <script src="app.js"></script>',
+      '<script>window.UCS_STATIC_MODE = true;</script>\n    <script src="app-config.js"></script>\n    <script src="app.js"></script>'
     );
 }
 
