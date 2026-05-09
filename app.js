@@ -1598,8 +1598,6 @@ async function applyCurrentCardToFolder() {
   libraryPinnedFolderId = folder.id;
   lastFolderSyncSnapshot = captureFolderSyncState();
   saveLib();
-  renderLib();
-  updateSelUI();
   syncLibraryFolderOpenState();
   updateFolderEditBanner();
   await refreshFolderThumbs(folder.id);
@@ -3707,6 +3705,19 @@ function triggerBlobDownload(blob, filename) {
   }, 1000);
 }
 
+function setImageSourceForExport(img, src) {
+  if (!img) return Promise.resolve();
+  const nextSrc = src || '';
+  if (img.src === nextSrc && img.complete) {
+    return Promise.resolve();
+  }
+  return new Promise(res => {
+    img.onload = res;
+    img.onerror = res;
+    img.src = nextSrc;
+  });
+}
+
 async function loadCardDataForExport(d) {
   const bgImg = $('card-bg-img');
   pngW = d.pngW || 616;
@@ -3718,22 +3729,12 @@ async function loadCardDataForExport(d) {
   stage.dataset.scale = dispScale;
   $('card-ph').style.display = 'none';
 
-  await new Promise(res => {
-    bgImg.onload = res;
-    bgImg.onerror = res;
-    bgImg.src = '';
-    bgImg.src = d.bgSrc;
-  });
+  await setImageSourceForExport(bgImg, d.bgSrc);
   bgImg.style.display = 'block';
 
   const logoImg = $('tx-logo');
   if (d.logoSrc && d.logoSrc.length > 10) {
-    await new Promise(res => {
-      logoImg.onload = res;
-      logoImg.onerror = res;
-      logoImg.src = '';
-      logoImg.src = d.logoSrc;
-    });
+    await setImageSourceForExport(logoImg, d.logoSrc);
     logoImg.style.display = 'inline-block';
     $('tx-badge-emoji').style.display = 'none';
   } else {
@@ -3926,6 +3927,8 @@ async function startGenerate(downloadAfterGenerate) {
     let generatedCount = 0;
     let failedCount = 0;
     const failedRows = [];
+    const bCols = getBulkColors();
+    const cardDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' });
 
     for (let i = 0; i < total; i++) {
       const row = bulkRows[i];
@@ -3941,7 +3944,6 @@ async function startGenerate(downloadAfterGenerate) {
       if (row.final_price !== undefined) $('f-final').value = formatPrice(row.final_price);
 
       // Apply bulk colors
-      const bCols = getBulkColors();
       $('c-bignum').value = bCols.bignum; $('c-months').value = bCols.months;
       $('c-free').value = bCols.free; $('c-subtitle').value = bCols.subtitle;
       $('c-orig').value = bCols.orig; $('c-orig-strike').value = bCols.origStrike; $('c-final').value = bCols.final;
@@ -3960,7 +3962,8 @@ async function startGenerate(downloadAfterGenerate) {
       try {
         const c = await renderToCanvas();
         const thumb = c.toDataURL('image/jpeg', .35);
-        folder.cards.push({ id: uid(), name: row.card_name, date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' }), thumb, data: { ...getData(), bgSrc: bulkBGSrc, pngW, pngH } });
+        const cardData = { ...getData(), bgSrc: bulkBGSrc, pngW, pngH };
+        folder.cards.push({ id: uid(), name: row.card_name, date: cardDate, thumb, data: cardData });
         generatedCount++;
         if (generatedCount % 5 === 0 || i === total - 1) saveLib();
         if (downloadAfterGenerate) {
@@ -3969,6 +3972,8 @@ async function startGenerate(downloadAfterGenerate) {
           const q = parseInt(($('jpeg-q-slider') && $('jpeg-q-slider').value) || 60) / 100;
           const ext = fmt === 'png' ? 'png' : 'jpg';
           const dataUrl = fmt === 'png' ? c.toDataURL('image/png') : compressToTarget(c, q);
+          const cacheKey = cardExportCacheKey(cardData, fid, fmt, q);
+          cacheCardExportResult(cacheKey, { dataUrl, ext });
           a.download = (row.card_name || 'card_' + (i + 1)).replace(/[^a-z0-9]/gi, '_') + '.' + ext;
           a.href = dataUrl;
           a.click();
