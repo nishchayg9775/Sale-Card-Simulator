@@ -60,14 +60,13 @@ Sensitive/runtime files such as `.env`, `server-data/`, `node_modules/`, and bac
 
 ### Deploy
 
-Push the repository to GitHub on the `main` branch. The included GitHub Actions workflow deploys `dist/` to GitHub Pages automatically.
-
-Then in GitHub:
+Before running the workflow, enable Pages for GitHub Actions:
 
 1. Open repository `Settings`.
 2. Go to `Pages`.
 3. Set source to `GitHub Actions`.
-4. Wait for the `Deploy GitHub Pages` workflow to finish.
+
+Then push the repository to GitHub on the `main` or `master` branch. The included GitHub Actions workflow deploys `dist/` to GitHub Pages automatically.
 
 Your public URL will look like:
 
